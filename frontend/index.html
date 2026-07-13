@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>半導體製程資料分析實驗平台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Semiconductor Process Data Lab</p>
+        <h1>半導體製程資料分析實驗平台</h1>
+      </div>
+      <div class="header-actions">
+        <button id="load-sample" class="primary">載入示範資料</button>
+        <button id="export-report">匯出報告 HTML</button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <aside class="sidebar">
+        <section class="status-panel">
+          <h2>學習進度</h2>
+          <div id="progress-list"></div>
+        </section>
+        <nav class="step-nav" aria-label="學習流程">
+          <a href="#observe">1 原始資料</a>
+          <a href="#import">2 資料匯入</a>
+          <a href="#quality">3 品質檢查</a>
+          <a href="#transform">4 資料處理</a>
+          <a href="#visualize">5 視覺化</a>
+          <a href="#analysis">6 分析</a>
+          <a href="#report">7 報告</a>
+        </nav>
+      </aside>
+
+      <div class="workspace">
+        <section class="module intro-module">
+          <div>
+            <p class="eyebrow">實驗任務</p>
+            <h2 id="assignment-title">設備製程參數與良率分析</h2>
+            <p id="assignment-description">
+              請從原始資料觀察開始，逐步檢查資料品質、執行必要處理、建立圖表、完成基礎分析，最後輸出一份能說明處理歷程與結論限制的報告。
+            </p>
+          </div>
+          <div class="metric-row" id="dataset-metrics">
+            <div><span>-</span><small>資料列</small></div>
+            <div><span>-</span><small>欄位</small></div>
+            <div><span>-</span><small>處理步驟</small></div>
+            <div><span>-</span><small>提示次數</small></div>
+          </div>
+        </section>
+
+        <section class="module" id="observe">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 1</p>
+              <h2>原始資料觀察</h2>
+            </div>
+            <button class="hint-button" data-hint="observe">提示</button>
+          </div>
+          <div class="two-column">
+            <div>
+              <h3>欄位說明</h3>
+              <div id="dictionary-table" class="table-wrap"></div>
+            </div>
+            <div class="form-grid">
+              <label>每一列資料代表什麼？
+                <textarea data-field="observations.rowMeaning"></textarea>
+              </label>
+              <label>哪些欄位像是製程輸入？
+                <textarea data-field="observations.inputs"></textarea>
+              </label>
+              <label>哪些欄位像是品質結果？
+                <textarea data-field="observations.outputs"></textarea>
+              </label>
+              <label>你初步懷疑哪些資料可能有問題？
+                <textarea data-field="observations.suspects"></textarea>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="module" id="import">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 2</p>
+              <h2>資料匯入與預覽</h2>
+            </div>
+            <button class="hint-button" data-hint="import">提示</button>
+          </div>
+          <div class="import-row">
+            <label class="dataset-picker">選擇案例資料集
+              <select id="dataset-select"></select>
+            </label>
+            <label class="file-box">
+              <span>上傳 CSV</span>
+              <input id="file-input" type="file" accept=".csv,text/csv" />
+            </label>
+            <button class="download-link" id="download-current" type="button">下載目前資料集 CSV</button>
+            <p id="import-message" class="note">尚未載入資料。可使用示範資料或上傳自己的 CSV。</p>
+          </div>
+          <div class="table-wrap tall" id="preview-table"></div>
+        </section>
+
+        <section class="module" id="quality">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 3</p>
+              <h2>資料品質檢查</h2>
+            </div>
+            <button class="hint-button" data-hint="quality">提示</button>
+          </div>
+          <div id="quality-summary" class="issue-grid"></div>
+          <div class="form-grid" id="quality-decisions"></div>
+        </section>
+
+        <section class="module" id="transform">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 4</p>
+              <h2>資料處理</h2>
+            </div>
+            <button class="hint-button" data-hint="transform">提示</button>
+          </div>
+          <div class="control-panel">
+            <label>處理理由
+              <input id="transform-reason" type="text" placeholder="例如：先統一設備命名，避免同一設備被分成多組。" />
+            </label>
+            <div class="button-grid">
+              <button data-action="normalizeMachine">正規化 Machine_ID</button>
+              <button data-action="removeDuplicates">移除重複列</button>
+              <button data-action="removeMissingYield">移除 Yield 缺值</button>
+              <button data-action="fillYieldMean">以平均值填補 Yield</button>
+              <button data-action="convertNumeric">轉換數值欄位</button>
+              <button data-action="addYieldBand">建立良率區間</button>
+              <button data-action="filterTemperature">保留溫度 70-82</button>
+              <button data-action="sortYield">依良率排序</button>
+              <button data-action="undo">還原上一步</button>
+              <button data-action="reset">回到原始資料</button>
+            </div>
+          </div>
+          <div class="table-wrap" id="history-table"></div>
+        </section>
+
+        <section class="module" id="visualize">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 5</p>
+              <h2>資料視覺化</h2>
+            </div>
+            <button class="hint-button" data-hint="visualize">提示</button>
+          </div>
+          <div class="chart-grid">
+            <article>
+              <h3 id="bar-chart-title">設備平均良率</h3>
+              <canvas id="bar-chart" width="700" height="360" aria-label="設備平均良率長條圖"></canvas>
+              <label>圖表解讀
+                <textarea data-field="chartNotes.bar"></textarea>
+              </label>
+            </article>
+            <article>
+              <h3 id="scatter-chart-title">溫度與良率</h3>
+              <canvas id="scatter-chart" width="700" height="360" aria-label="溫度與良率散佈圖"></canvas>
+              <label>圖表解讀
+                <textarea data-field="chartNotes.scatter"></textarea>
+              </label>
+            </article>
+            <article>
+              <h3 id="histogram-chart-title">良率分布</h3>
+              <canvas id="histogram-chart" width="700" height="360" aria-label="良率直方圖"></canvas>
+              <label>圖表解讀
+                <textarea data-field="chartNotes.histogram"></textarea>
+              </label>
+            </article>
+          </div>
+        </section>
+
+        <section class="module" id="analysis">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 6</p>
+              <h2>基礎分析</h2>
+            </div>
+            <button class="hint-button" data-hint="analysis">提示</button>
+          </div>
+          <div class="analysis-grid" id="analysis-output"></div>
+          <div class="form-grid">
+            <label>群組比較解讀
+              <textarea data-field="analysisNotes.group"></textarea>
+            </label>
+            <label>相關性或趨勢解讀
+              <textarea data-field="analysisNotes.correlation"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="module" id="report">
+          <div class="module-heading">
+            <div>
+              <p class="eyebrow">Step 7</p>
+              <h2>報告撰寫</h2>
+            </div>
+            <button class="hint-button" data-hint="report">提示</button>
+          </div>
+          <label>結論、限制與學習反思
+            <textarea data-field="conclusion" class="large-text"></textarea>
+          </label>
+          <div class="report-actions">
+            <button id="build-report" class="primary">產生報告預覽</button>
+            <button id="print-report">列印或另存 PDF</button>
+          </div>
+          <article id="report-preview" class="report-preview"></article>
+        </section>
+      </div>
+    </main>
+
+    <dialog id="hint-dialog">
+      <form method="dialog">
+        <h2 id="hint-title">提示</h2>
+        <div id="hint-content"></div>
+        <button class="primary">知道了</button>
+      </form>
+    </dialog>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

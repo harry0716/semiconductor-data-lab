@@ -1,0 +1,11 @@
+{
+  "name": "semiconductor-process-data-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate-data": "node scripts/generate-datasets.mjs",
+    "start": "node scripts/dev-server.mjs",
+    "test": "node --check frontend/app.js && node tests/smoke-tests.mjs"
+  }
+}
