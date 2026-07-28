@@ -13,7 +13,7 @@
         <h1>半導體製程資料分析實驗平台</h1>
       </div>
       <div class="header-actions">
-        <button id="load-sample" class="primary">載入示範資料</button>
+        <button id="load-sample" class="primary">選擇示範資料</button>
         <button id="export-report">匯出報告 HTML</button>
       </div>
     </header>
@@ -221,6 +221,21 @@
         <h2 id="hint-title">提示</h2>
         <div id="hint-content"></div>
         <button class="primary">知道了</button>
+      </form>
+    </dialog>
+
+    <dialog id="dataset-dialog">
+      <form method="dialog">
+        <p class="eyebrow">9 組練習資料</p>
+        <h2>選擇示範資料</h2>
+        <p class="dialog-description">依學習程度選擇一組案例，載入後即可從原始資料觀察開始練習。</p>
+        <label>案例資料集
+          <select id="dataset-dialog-select"></select>
+        </label>
+        <div class="dialog-actions">
+          <button value="cancel">取消</button>
+          <button id="confirm-dataset" class="primary" type="button">載入所選資料</button>
+        </div>
       </form>
     </dialog>
 

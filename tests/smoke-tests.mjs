@@ -24,6 +24,12 @@ assert.deepEqual(
   "每個案例都應有 3 份資料"
 );
 
+const pageHtml = await readFile(new URL("../frontend/index.html", import.meta.url), "utf8");
+const appScript = await readFile(new URL("../frontend/app.js", import.meta.url), "utf8");
+assert.match(pageHtml, /id="dataset-dialog-select"/, "頁首按鈕應開啟資料集選擇視窗");
+assert.match(pageHtml, /id="confirm-dataset"/, "資料集選擇視窗應提供明確的載入按鈕");
+assert.match(appScript, /\["#dataset-select", "#dataset-dialog-select"\]/, "上下兩個資料集選擇器應保持同步");
+
 for (const dataset of datasetCatalog) {
   const datasetCsv = await readFile(new URL(`../${dataset.path}`, import.meta.url), "utf8");
   const datasetRows = parseCsv(datasetCsv);

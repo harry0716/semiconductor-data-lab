@@ -146,19 +146,42 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-async function loadSample() {
+function showImportFeedback() {
+  const importSection = $("#import");
+  const message = $("#import-message");
+  message.classList.add("success");
+  importSection.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+
+async function loadSample({ focusImport = false } = {}) {
   const dataset = state.selectedDataset || defaultDataset;
+  const button = $("#load-sample");
+  const originalButtonText = button?.textContent;
+  if (focusImport && button) {
+    button.disabled = true;
+    button.textContent = "載入中...";
+  }
   try {
     if (location.protocol === "http:" || location.protocol === "https:") {
       const response = await fetch(`../${dataset.path}?v=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const text = await response.text();
       loadCsv(text, `已載入：${dataset.title}`);
+      if (focusImport) showImportFeedback();
       return;
     }
     throw new Error("local file mode");
   } catch (error) {
     loadCsv(embeddedDatasets[dataset.id] || sampleCsv, `已載入內建資料：${dataset.title}`);
+    if (focusImport) showImportFeedback();
+  } finally {
+    if (focusImport && button) {
+      button.disabled = false;
+      button.textContent = "已載入示範資料";
+      window.setTimeout(() => {
+        button.textContent = originalButtonText || "載入示範資料";
+      }, 1800);
+    }
   }
 }
 
@@ -168,10 +191,14 @@ function loadCsv(text, message) {
     state.originalRows = rows;
     state.rows = rows;
     state.history = [createSnapshot([], "載入原始資料", rows, "建立原始資料版本。")];
-    $("#import-message").textContent = message;
+    const importMessage = $("#import-message");
+    importMessage.textContent = message;
+    importMessage.classList.remove("success");
     renderAll();
   } catch (error) {
-    $("#import-message").textContent = error.message;
+    const importMessage = $("#import-message");
+    importMessage.textContent = error.message;
+    importMessage.classList.remove("success");
   }
 }
 
@@ -186,13 +213,26 @@ function renderDictionary() {
 }
 
 function renderDatasetSelector() {
-  const select = $("#dataset-select");
-  if (!select) return;
-  select.innerHTML = datasetCatalog.map((dataset) => (
-    `<option value="${dataset.id}">${dataset.title}（${dataset.difficulty}）</option>`
-  )).join("");
-  select.value = state.selectedDataset?.id || defaultDataset.id;
+  const difficultyOrder = ["初階", "中階", "進階"];
+  const options = difficultyOrder.map((difficulty) => {
+    const datasets = datasetCatalog.filter((dataset) => dataset.difficulty === difficulty);
+    return `<optgroup label="${difficulty}">${datasets.map((dataset) => (
+      `<option value="${dataset.id}">${dataset.title}</option>`
+    )).join("")}</optgroup>`;
+  }).join("");
+
+  ["#dataset-select", "#dataset-dialog-select"].forEach((selector) => {
+    const select = $(selector);
+    if (!select) return;
+    select.innerHTML = options;
+    select.value = state.selectedDataset?.id || defaultDataset.id;
+  });
   updateDatasetInfo();
+}
+
+function selectDataset(datasetId) {
+  state.selectedDataset = datasetCatalog.find((dataset) => dataset.id === datasetId) || defaultDataset;
+  renderDatasetSelector();
 }
 
 function updateDatasetInfo() {
@@ -611,12 +651,20 @@ function renderAll() {
 }
 
 function setupEvents() {
-  $("#load-sample").addEventListener("click", loadSample);
+  $("#load-sample").addEventListener("click", () => {
+    renderDatasetSelector();
+    $("#dataset-dialog").showModal();
+    $("#dataset-dialog-select").focus();
+  });
+  $("#confirm-dataset").addEventListener("click", () => {
+    selectDataset($("#dataset-dialog-select").value);
+    $("#dataset-dialog").close();
+    loadSample({ focusImport: true });
+  });
   $("#download-current").addEventListener("click", downloadCurrentDataset);
   $("#dataset-select").addEventListener("change", (event) => {
-    state.selectedDataset = datasetCatalog.find((dataset) => dataset.id === event.target.value) || defaultDataset;
-    updateDatasetInfo();
-    loadSample();
+    selectDataset(event.target.value);
+    loadSample({ focusImport: true });
   });
   $("#file-input").addEventListener("change", async (event) => {
     const file = event.target.files?.[0];
